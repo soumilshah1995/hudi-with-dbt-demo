@@ -1,7 +1,7 @@
 
 hudi-with dbt-demo
 
-<img width="951" alt="Capture" src="https://user-images.githubusercontent.com/39345855/209358284-b20be393-b554-4495-b8dc-86e261e759c8.PNG"
+<img width="951" alt="Capture" src="https://user-images.githubusercontent.com/39345855/209361428-2c684510-8d15-48b7-9a78-13a3aa7402eb.PNG">
 
 
 # Steps 
