@@ -6,6 +6,17 @@ hudi-with dbt-demo
 
 # Steps 
 ### Step1 : Deploy the Stack and get IAM Role as shown in video 
+
+* cd Infra
+```
+npx serverless config credentials --provider aws --key <ACCESS KEY GOES HERE>  --secret <SECRET KEY > -o
+  
+npx sls deploy
+```
+ 
+ ![image](https://user-images.githubusercontent.com/39345855/209359135-b9585ddf-ef0c-4a81-b574-4af6c5380c58.png)
+
+     
 ### Step2 : add the settings C:\Users\<USERNAME>\.dbt
 ```
 dbtglue:
