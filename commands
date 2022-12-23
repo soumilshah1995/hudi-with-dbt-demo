@@ -1,0 +1,36 @@
+## Step 1:
+Run Glue Notebook
+
+## Step 2:
+C:\Users\<USERNAME>\.dbt
+C:\Users\s.shah\.dbt
+
+dbtglue:
+  target: dev
+  outputs:
+    dev:
+      type: glue
+      query-comment: demo
+      role_arn: "arn:aws:iam::XXXXX:role/GlueInteractiveSessionRole"
+      region: us-east-1
+      workers: 3
+      worker_type: G.1X
+      schema: "sampledb"
+      database: "sampledb"
+      session_provisioning_timeout_in_seconds: 300
+      location: "s3://glue-learn-begineers/sample/"
+      conf: "spark.serializer=org.apache.spark.serializer.KryoSerializer,spark.sql.hive.convertMetastoreParquet=false,spark.sql.legacy.pathOptionBehavior.enabled=true"
+      extra_jars: "s3://glue-learn-begineers/jar/spark-avro_2.12-3.0.1.jar,s3://glue-learn-begineers/jar/hudi-spark3-bundle_2.12-0.9.0.jar"
+
+
+
+
+
+
+
+
+npx serverless config credentials --provider aws --key XXX  --secret XXXX -o
+
+dbt debug --profiles-dir profile
+
+dbt run --profiles-dir profile

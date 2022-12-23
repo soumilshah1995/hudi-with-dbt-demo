@@ -1,0 +1,284 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "IamGlueRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "GlueInteractiveSessionRole",
+        "Path": "/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lakeformation.amazonaws.com",
+                  "glue.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "GlueInteractiveSessionPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "AllowStatementInASessionToAUser",
+                  "Action": [
+                    "glue:ListSessions",
+                    "glue:GetConnection",
+                    "glue:GetSession",
+                    "glue:ListStatements",
+                    "glue:GetStatement",
+                    "glue:RunStatement",
+                    "glue:CancelStatement",
+                    "glue:DeleteSession"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:glue:us-east-1:043916019468:session/*"
+                    }
+                  ]
+                },
+                {
+                  "Action": [
+                    "glue:CreateSession",
+                    "glue:GetConnection"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:iam::*:role/GlueInteractiveSessionRole*",
+                  "Condition": {
+                    "StringLike": {
+                      "iam:PassedToService": [
+                        "glue.amazonaws.com"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:iam::*:role/service-role/GlueInteractiveSessionRole*"
+                  ],
+                  "Condition": {
+                    "StringLike": {
+                      "iam:PassedToService": [
+                        "glue.amazonaws.com"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "DbtGluePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "glue:SearchTables",
+                    "glue:GetConnection",
+                    "glue:BatchCreatePartition",
+                    "glue:CreatePartitionIndex",
+                    "glue:DeleteDatabase",
+                    "glue:GetTableVersions",
+                    "glue:GetPartitions",
+                    "glue:DeleteTableVersion",
+                    "glue:UpdateTable",
+                    "glue:DeleteTable",
+                    "glue:DeletePartitionIndex",
+                    "glue:GetTableVersion",
+                    "glue:UpdateColumnStatisticsForTable",
+                    "glue:CreatePartition",
+                    "glue:UpdateDatabase",
+                    "glue:CreateTable",
+                    "glue:GetTables",
+                    "glue:GetDatabases",
+                    "glue:GetTable",
+                    "glue:GetDatabase",
+                    "glue:GetPartition",
+                    "glue:UpdateColumnStatisticsForPartition",
+                    "glue:CreateDatabase",
+                    "glue:BatchDeleteTableVersion",
+                    "glue:BatchDeleteTable",
+                    "glue:DeletePartition"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:glue:us-east-1:043916019468:catalog"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:glue:us-east-1:043916019468:table/*/*"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:glue:us-east-1:043916019468:database/*"
+                    }
+                  ]
+                },
+                {
+                  "Action": [
+                    "lakeformation:UpdateResource",
+                    "lakeformation:ListResources",
+                    "lakeformation:BatchGrantPermissions",
+                    "lakeformation:GrantPermissions",
+                    "lakeformation:GetDataAccess",
+                    "lakeformation:GetTableObjects",
+                    "lakeformation:PutDataLakeSettings",
+                    "lakeformation:RevokePermissions",
+                    "lakeformation:ListPermissions",
+                    "lakeformation:BatchRevokePermissions",
+                    "lakeformation:UpdateTableObjects",
+                    "glue:GetUserDefinedFunctions"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Action": [
+                    "s3:GetBucketLocation",
+                    "s3:ListBucket"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:s3:::glue-learn-begineers"
+                    },
+                    "arn:aws:s3:::serverless-analytics"
+                  ]
+                },
+                {
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:PutObjectAcl",
+                    "s3:GetObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:s3:::glue-learn-begineers/*"
+                    }
+                  ]
+                },
+                {
+                  "Action": [
+                    "s3:GetObject"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:s3:::{env:BUCKET}/*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-datateam-dev-ServerlessDeploymentBucketName"
+      }
+    }
+  }
+}

@@ -1,0 +1,150 @@
+service: datateam
+
+frameworkVersion: '3'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.8
+  memorySize: 200
+  timeout: 500
+  stackTags:
+    env: qa
+    created-date: 2022-04-26
+    customer-impact: false
+    terraform: false
+
+
+resources:
+
+  Resources:
+
+    IamGlueRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        RoleName: GlueInteractiveSessionRole
+        Path: /
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lakeformation.amazonaws.com
+                  - glue.amazonaws.com
+              Action:
+                - 'sts:AssumeRole'
+        Policies:
+          - PolicyName: "GlueInteractiveSessionPolicy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Sid: AllowStatementInASessionToAUser
+                  Action:
+                    - 'glue:ListSessions'
+                    -  "glue:GetConnection"
+                    - 'glue:GetSession'
+                    - 'glue:ListStatements'
+                    - 'glue:GetStatement'
+                    - 'glue:RunStatement'
+                    - 'glue:CancelStatement'
+                    - 'glue:DeleteSession'
+                  Effect: Allow
+                  Resource:
+                    - !Sub 'arn:aws:glue:${env:Region}:${env:AccountId}:session/*'
+                - Action:
+                    - 'glue:CreateSession'
+                    - 'glue:GetConnection'
+                  Effect: Allow
+                  Resource:
+                    - '*'
+                - Action:
+                    - 'iam:PassRole'
+                  Effect: Allow
+                  Resource: 'arn:aws:iam::*:role/GlueInteractiveSessionRole*'
+                  Condition:
+                    StringLike:
+                      'iam:PassedToService':
+                        - glue.amazonaws.com
+                - Action:
+                    - 'iam:PassRole'
+                  Effect: Allow
+                  Resource:
+                    - 'arn:aws:iam::*:role/service-role/GlueInteractiveSessionRole*'
+                  Condition:
+                    StringLike:
+                      'iam:PassedToService':
+                        - glue.amazonaws.com
+          - PolicyName: DbtGluePolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Action:
+                    - 'glue:SearchTables'
+                    -  "glue:GetConnection"
+                    - 'glue:BatchCreatePartition'
+                    - 'glue:CreatePartitionIndex'
+                    - 'glue:DeleteDatabase'
+                    - 'glue:GetTableVersions'
+                    - 'glue:GetPartitions'
+                    - 'glue:DeleteTableVersion'
+                    - 'glue:UpdateTable'
+                    - 'glue:DeleteTable'
+                    - 'glue:DeletePartitionIndex'
+                    - 'glue:GetTableVersion'
+                    - 'glue:UpdateColumnStatisticsForTable'
+                    - 'glue:CreatePartition'
+                    - 'glue:UpdateDatabase'
+                    - 'glue:CreateTable'
+                    - 'glue:GetTables'
+                    - 'glue:GetDatabases'
+                    - 'glue:GetTable'
+                    - 'glue:GetDatabase'
+                    - 'glue:GetPartition'
+                    - 'glue:UpdateColumnStatisticsForPartition'
+                    - 'glue:CreateDatabase'
+                    - 'glue:BatchDeleteTableVersion'
+                    - 'glue:BatchDeleteTable'
+                    - 'glue:DeletePartition'
+                  Effect: Allow
+                  Resource:
+                    - !Sub 'arn:aws:glue:${env:Region}:${env:AccountId}:catalog'
+                    - !Sub 'arn:aws:glue:${env:Region}:${env:AccountId}:table/*/*'
+                    - !Sub 'arn:aws:glue:${env:Region}:${env:AccountId}:database/*'
+                - Action:
+                    - 'lakeformation:UpdateResource'
+                    - 'lakeformation:ListResources'
+                    - 'lakeformation:BatchGrantPermissions'
+                    - 'lakeformation:GrantPermissions'
+                    - 'lakeformation:GetDataAccess'
+                    - 'lakeformation:GetTableObjects'
+                    - 'lakeformation:PutDataLakeSettings'
+                    - 'lakeformation:RevokePermissions'
+                    - 'lakeformation:ListPermissions'
+                    - 'lakeformation:BatchRevokePermissions'
+                    - 'lakeformation:UpdateTableObjects'
+                    - 'glue:GetUserDefinedFunctions'
+                  Effect: Allow
+                  Resource:
+                    - '*'
+                - Action:
+                    - 's3:GetBucketLocation'
+                    - 's3:ListBucket'
+                  Effect: Allow
+                  Resource:
+                    - !Sub 'arn:aws:s3:::${env:BUCKET}'
+                    - 'arn:aws:s3:::serverless-analytics'
+                - Action:
+                    - 's3:PutObject'
+                    - 's3:PutObjectAcl'
+                    - 's3:GetObject'
+                    - 's3:DeleteObject'
+                  Effect: Allow
+                  Resource:
+                    - !Sub 'arn:aws:s3:::${env:BUCKET}/*'
+                - Action:
+                    - 's3:GetObject'
+                  Effect: Allow
+                  Resource:
+                    - 'arn:aws:s3:::{env:BUCKET}/*'
