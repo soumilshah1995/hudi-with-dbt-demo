@@ -1,0 +1,26 @@
+
+
+version: 2
+
+models:
+    - name: cleansed_order
+      description: "cleansed normalized columns "
+      columns:
+          - name: invoiceid
+            description: "The primary key for this table"
+            tests:
+                - not_null
+          - name: category
+            description: "some desc"
+          - name: destinationstate
+            description: "some desc"
+          - name: itemid
+            description: "some desc"
+
+    - name: view_state
+      description: "metrics based on state"
+      columns:
+        - name: state
+          description: "state"
+        - name: total_invoice
+          description: "some desc"

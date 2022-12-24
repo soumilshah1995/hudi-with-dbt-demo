@@ -1,0 +1,17 @@
+dbtglue:
+  target: dev
+  outputs:
+    dev:
+      project_name : 'dbtglue'
+      type: glue
+      query-comment: demo
+      role_arn: "arn:aws:iam::043916019468:role/GlueInteractiveSessionRole"
+      region: us-west-2
+      workers: 3
+      worker_type: G.1X
+      schema: "sampledb"
+      database: "sampledb"
+      session_provisioning_timeout_in_seconds: 200
+      location: "s3://soumil-dms-learn/sample/"
+      connections: "hudi-connection"
+      conf: "spark.serializer=org.apache.spark.serializer.KryoSerializer"

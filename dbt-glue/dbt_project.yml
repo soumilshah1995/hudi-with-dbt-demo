@@ -1,0 +1,22 @@
+name: 'dbtglue'
+
+version: '1.0.0'
+
+config-version: 2
+
+profile: 'dbtglue'
+
+model-paths: ["models"]
+
+target-path: "target"
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+
+models:
+  +file_format: hudi
+  dbtglue:
+    metrics:
+      materialized: table
