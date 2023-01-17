@@ -46,7 +46,7 @@ pip3 install -r requirements.txt
 ### Step4 : Run the glue notebook and insert data into HUdi Raw tables 
 
 
-### Step5 : Go inside dbtgluen and issue commands
+### Step5 : Go inside dbt-glue and issue commands
 ```
 
 dbt debug --profiles-dir profile
